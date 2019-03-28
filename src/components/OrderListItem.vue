@@ -6,7 +6,7 @@
         <img :src="imageLink(60, 60)">
       </div>
     </td>
-    <td class="product-name">{{ order.productLineItems[0].product.name }}</td>
+    <td class="product-name"><div class="product-name">{{ order.productLineItems[0].product.name }}</div></td>
     <td class="price-column">{{ order.grandTotal | formatPrice(locale) }}</td>
     <td class="status-column">
       <span v-if="completed">Completed</span>
@@ -155,6 +155,15 @@ td {
   height: 60px;
   overflow: hidden;
   border-radius: 4px;
+}
+.image-container:before {
+    content: "";
+    display: inline-block;
+    height: 100%;
+    vertical-align: middle;
+}
+.product-name {
+ padding:0.8em;
 }
 .done,
 .done a {

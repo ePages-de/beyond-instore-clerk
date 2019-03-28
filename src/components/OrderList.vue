@@ -4,9 +4,9 @@
       <tr>
         <th>Order</th>
         <th colspan="2">Product</th>
-        <th>Total amount</th>
+        <th class="price-column">Total amount</th>
         <th>Status</th>
-        <th>Invoice</th>
+        <th class="invoice-column">Invoice</th>
       </tr>
     </thead>
     <tbody v-if="orders.length > 0">
@@ -73,6 +73,10 @@ th {
   background-color: #eeeeee;
   text-align: left;
 }
+.price-column,
+.invoice-column {
+  text-align: right;
+}
 tr {
   border-bottom: 1px solid #e9e8dc;
   background-color: white;
@@ -94,4 +98,3 @@ th {
   }
 }
 </style>
-
