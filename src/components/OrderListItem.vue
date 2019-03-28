@@ -7,7 +7,7 @@
       </div>
     </td>
     <td class="product-name">{{ order.productLineItems[0].product.name }}</td>
-    <td class="price-column">{{ order.grandTotal | formatPrice(shop) }}</td>
+    <td class="price-column">{{ order.grandTotal | formatPrice(locale) }}</td>
     <td class="status-column">
       <span v-if="completed">Completed</span>
       <button v-if="!completed" v-on:click.prevent="completeOrder">Confirm</button>
@@ -24,12 +24,11 @@
 /* eslint-disable */
 import _ from "lodash";
 import uriTemplates from "uri-templates";
-import ShopMixin from "@/mixins/ShopMixin";
+import { headers } from "@/components/OrderList";
 
 export default {
   name: "OrderListItem",
-  props: ["order"],
-  mixins: [ShopMixin],
+  props: ["order", "locale"],
   computed: {
     completed() {
       return (
@@ -42,8 +41,8 @@ export default {
     }
   },
   filters: {
-    formatPrice: function(price, shop) {
-      return new Intl.NumberFormat(shop.defaultLocale, {
+    formatPrice: function(price, locale) {
+      return new Intl.NumberFormat(locale, {
         style: "currency",
         currency: price.currency
       }).format(price.amount);
@@ -62,6 +61,50 @@ export default {
     },
     async completeOrder() {
       console.info("=== Complete order @ OrderListItem");
+      const {
+        data: { _id: shippingProcessId }
+      } = await this.$axios.post(
+        `/orders/${this.order._id}/processes/shippings`,
+        {
+          comment: "",
+          sendMail: true,
+          trackingCode: "",
+          trackingLink: "",
+          lineItems: this.order.productLineItems.map(productLineItem => ({
+            quantity: productLineItem.quantity,
+            productLineItemId: productLineItem._id
+          }))
+        },
+        { headers }
+      );
+
+      const { data } = await this.$axios.get(this.order._links.processes.href, {
+        headers
+      });
+      const paymentProcessMarkPaidLink =
+        data._embedded["payment-processes"][0]._links["mark-paid"].href;
+      const shippingProcessMarkShippedLink =
+        data._embedded["shipping-processes"][0]._links["mark-shipped"].href;
+
+      await this.$axios.post(
+        shippingProcessMarkShippedLink,
+        { comment: "" },
+        { headers }
+      );
+
+      await this.$axios.post(
+        paymentProcessMarkPaidLink,
+        {
+          comment: "",
+          details: {
+            amount: {
+              amount: this.order.grandTotal.amount,
+              currency: this.order.grandTotal.currency
+            }
+          }
+        },
+        { headers }
+      );
     },
     async printInvoice() {
       console.info("=== Print invoice @ OrderListItem");
