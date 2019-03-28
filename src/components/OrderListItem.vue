@@ -4,17 +4,18 @@
       <td class="order-number">{{order.orderNumber}}</td>
       <td class="image-column">
         <div class="image-container">
-          <img :src="imageLink(60, 60)">
+          <a :href="cockpitLink" target="_blank">
+            <img :src="imageLink(60, 60)">
+          </a>
         </div>
       </td>
       <td class="product-name">
         <div class="product-name">
-          {{ order.productLineItems[0].product.name }} {{ variationValue }}
           <a
-            href="#"
-            v-if="order.productLineItems.length > 1"
-            v-on:click="toggleChildren"
-          >
+            :href="cockpitLink"
+            target="_blank"
+          >{{ order.productLineItems[0].product.name }} {{ variationValue }}</a>
+          <a href="#" v-if="order.productLineItems.length > 1" v-on:click="toggleChildren">
             + {{order.productLineItems.length}} products
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -68,6 +69,34 @@ export default {
     };
   },
   computed: {
+    editMode() {
+      if (
+        this.order.productLineItems[0].product.variationAttributeValues.length >
+        0
+      )
+        return "editVariation";
+      else return "edit";
+    },
+    productId() {
+      if (
+        this.order.productLineItems[0].product.variationAttributeValues
+          .length === 0
+      )
+        return this.order.productLineItems[0].product._id;
+      else
+        return this.order.productLineItems[0].product._links[
+          "variation-product"
+        ].href.substr(
+          this.order.productLineItems[0].product._links[
+            "variation-product"
+          ].href.lastIndexOf("/") + 1
+        );
+    },
+    cockpitLink() {
+      return `https://${
+        this.$route.params.shop
+      }.beyondshop.cloud/cockpit/products/${this.editMode}/${this.productId}`;
+    },
     variationValue() {
       if (this.order.productLineItems[0].product.variationAttributeValues) {
         return this.order.productLineItems[0].product.variationAttributeValues

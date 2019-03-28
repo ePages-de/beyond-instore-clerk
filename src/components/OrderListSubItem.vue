@@ -3,10 +3,14 @@
     <td class="order-number"></td>
     <td class="image-column">
       <div class="image-container">
-        <img :src="imageLink(60, 60)">
+        <a :href="cockpitLink" target="_blank">
+          <img :src="imageLink(60, 60)">
+        </a>
       </div>
     </td>
-    <td class="product-name">{{ product.product.name }} {{variationValue }}</td>
+    <td class="product-name">
+      <a :href="cockpitLink" target="_blank">{{ product.product.name }} {{variationValue }}</a>
+    </td>
     <td class="price-column">{{ product.lineItemPrice | formatPrice(locale) }}</td>
     <td class="status-column"></td>
     <td class="invoice-column"></td>
@@ -21,6 +25,26 @@ export default {
   name: "OrderListSubItem",
   props: ["product", "locale"],
   computed: {
+    productId() {
+      if (this.product.product.variationAttributeValues.length === 0)
+        return this.product.product._id;
+      else
+        return this.product.product._links["variation-product"].href.substr(
+          this.product.product._links["variation-product"].href.lastIndexOf(
+            "/"
+          ) + 1
+        );
+    },
+    editMode() {
+      if (this.product.product.variationAttributeValues.length > 0)
+        return "editVariation";
+      else return "edit";
+    },
+    cockpitLink() {
+      return `https://${
+        this.$route.params.shop
+      }.beyondshop.cloud/cockpit/products/${this.editMode}/${this.productId}`;
+    },
     variationValue() {
       if (this.product.product.variationAttributeValues) {
         return this.product.product.variationAttributeValues
