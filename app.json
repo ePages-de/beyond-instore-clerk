@@ -1,0 +1,28 @@
+{
+    "name": "BEYOND Instore Checkout",
+    "description": "Checkout application for BEYOND Instore",
+    "website": "https://instore.beyondshop.cloud/",
+    "repository": "https://github.com/ePages-de/beyond-instore-checkout",
+    "logo": "https://raw.githubusercontent.com/ePages-de/beyond-instore-checkout/master/public/apple-touch-icon.png?raw=true",
+    "keywords": [
+        "vuejs",
+        "beyond",
+        "instore",
+        "rest-api"
+    ],
+    "buildpacks": [
+        {
+            "url": "heroku/nodejs"
+        }
+    ],
+    "env": {
+        "NPM_CONFIG_PRODUCTION": {
+            "value": "false",
+            "description": "Only install `dependencies`, but not `devDependencies`"
+        },
+        "YARN_PRODUCTION": {
+            "value": "false",
+            "description": "Only install `dependencies`, but not `devDependencies`"
+        }
+    }
+}
