@@ -1,5 +1,5 @@
 <template>
-  <table>
+  <table v-if="orders.length > 0">
     <thead>
       <tr>
         <th>Order</th>
@@ -9,15 +9,14 @@
         <th class="invoice-column">Invoice</th>
       </tr>
     </thead>
-    <tbody v-if="orders.length > 0">
-      <OrderListItem
-        v-for="order in orders"
-        v-on:orderMarkAsCompleted="markAsCompleted"
-        :key="order.orderNumber"
-        :order="order"
-        :locale="shop.defaultLocale"
-      />
-    </tbody>
+    <OrderListItem
+      v-for="order in orders"
+      v-on:orderMarkAsCompleted="markAsCompleted"
+      v-on:toggleChildren="toggleChildren"
+      :key="order.orderNumber"
+      :order="order"
+      :locale="shop.defaultLocale"
+    />
   </table>
 </template>
 <script>
@@ -29,11 +28,13 @@ const token =
 export const headers = { Authorization: `Bearer ${token}` };
 
 export default {
+  name: "OrderList",
   mixins: [ShopMixin],
   components: { OrderListItem },
   data: function() {
     return {
-      orders: []
+      orders: [],
+      openedOrders: []
     };
   },
 
@@ -42,6 +43,15 @@ export default {
   },
 
   methods: {
+    toggleChildren(orderId) {
+      if (this.openedOrders.includes(orderId)) {
+        this.openedOrders = this.openedOrders.filter(
+          order => order !== orderId
+        );
+      } else {
+        this.openedOrders = [...this.openedOrders, orderId];
+      }
+    },
     markAsCompleted(orderId) {
       this.orders = this.orders.map(order => {
         if (order._id === orderId) {

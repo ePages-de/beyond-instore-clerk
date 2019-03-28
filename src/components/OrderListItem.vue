@@ -1,23 +1,54 @@
 <template>
-  <tr class="order-list-item" :class="{done: completed}">
-    <td class="order-number">{{order.orderNumber}}</td>
-    <td class="image-column">
-      <div class="image-container">
-        <img :src="imageLink(60, 60)">
-      </div>
-    </td>
-    <td class="product-name"><div class="product-name">{{ order.productLineItems[0].product.name }}</div></td>
-    <td class="price-column">{{ order.grandTotal | formatPrice(locale) }}</td>
-    <td class="status-column">
-      <span v-if="completed">Completed</span>
-      <button v-if="!completed" v-on:click.prevent="completeOrder">Confirm</button>
-    </td>
-    <td class="invoice-column">
-      <span v-if="!hasCustomBillingAddress">n/a</span>
-      <button v-if="hasCustomBillingAddress" v-on:click.prevent="printInvoice">Print</button>&nbsp;
-      <button v-if="hasCustomBillingAddress" v-on:click.prevent="sendInvoice">Send</button>
-    </td>
-  </tr>
+  <tbody>
+    <tr class="order-list-item" :class="{done: completed}">
+      <td class="order-number">{{order.orderNumber}}</td>
+      <td class="image-column">
+        <div class="image-container">
+          <img :src="imageLink(60, 60)">
+        </div>
+      </td>
+      <td class="product-name">
+        <div class="product-name">
+          {{ order.productLineItems[0].product.name }} {{ variationValue }}
+          <a
+            href="#"
+            v-if="order.productLineItems.length > 1"
+            v-on:click="toggleChildren"
+          >
+            + {{order.productLineItems.length}} products
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              class="collapsible-icon"
+              :class="{'collapsible-icon-open': childrenOpen}"
+            >
+              <path d="M21 12L3 24V0z"></path>
+            </svg>
+          </a>
+        </div>
+      </td>
+      <td class="price-column">{{ order.grandTotal | formatPrice(locale) }}</td>
+      <td class="status-column">
+        <span v-if="completed">Completed</span>
+        <button v-if="!completed" v-on:click.prevent="completeOrder">Confirm</button>
+      </td>
+      <td class="invoice-column">
+        <span v-if="!hasCustomBillingAddress">n/a</span>
+        <button v-if="hasCustomBillingAddress" v-on:click.prevent="printInvoice">Print</button>&nbsp;
+        <button v-if="hasCustomBillingAddress" v-on:click.prevent="sendInvoice">Send</button>
+      </td>
+    </tr>
+    <template v-if="childrenOpen">
+      <OrderListSubItem
+        v-for="product in order.productLineItems"
+        :key="product._id"
+        :product="product"
+        :locale="locale"
+      />
+    </template>
+  </tbody>
 </template>
 
 <script>
@@ -25,11 +56,25 @@
 import _ from "lodash";
 import uriTemplates from "uri-templates";
 import { headers } from "@/components/OrderList";
+import OrderListSubItem from "@/components/OrderListSubItem";
 
 export default {
   name: "OrderListItem",
   props: ["order", "locale"],
+  components: { OrderListSubItem },
+  data() {
+    return {
+      childrenOpen: false
+    };
+  },
   computed: {
+    variationValue() {
+      if (this.order.productLineItems[0].product.variationAttributeValues) {
+        return this.order.productLineItems[0].product.variationAttributeValues
+          .map(value => value.value)
+          .join(" ");
+      }
+    },
     completed() {
       return (
         this.order.paymentStatus === "PAID" &&
@@ -49,6 +94,9 @@ export default {
     }
   },
   methods: {
+    toggleChildren() {
+      this.childrenOpen = !this.childrenOpen;
+    },
     imageLink: function(width, height = 2560) {
       var link = _.get(
         this.order,
@@ -157,13 +205,13 @@ td {
   border-radius: 4px;
 }
 .image-container:before {
-    content: "";
-    display: inline-block;
-    height: 100%;
-    vertical-align: middle;
+  content: "";
+  display: inline-block;
+  height: 100%;
+  vertical-align: middle;
 }
 .product-name {
- padding:0.8em;
+  padding: 0.8em;
 }
 .done,
 .done a {
@@ -173,6 +221,16 @@ td {
 .done img {
   opacity: 0.5;
 }
+
+.collapsible-icon {
+  width: 8px;
+  height: 8px;
+  margin-right: 6px;
+}
+.collapsible-icon-open {
+  transform: rotate(90deg);
+}
+
 button {
   background-color: #418ccc;
   transition: 0.3s ease-out;
