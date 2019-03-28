@@ -59,6 +59,9 @@ export default {
         ? uriTemplates(link.href).fill({ width, height })
         : "https://dummyimage.com/180x200/ffffff/0011ff.png&text=no+image";
     },
+    async markAsPaid() {
+      console.info("=== Mark order as paid @ OrderListView");
+    },
     async completeOrder() {
       console.info("=== Complete order @ OrderListItem");
       const {
@@ -105,6 +108,7 @@ export default {
         },
         { headers }
       );
+      this.$emit("orderMarkAsCompleted", this.order._id);
     },
     async printInvoice() {
       console.info("=== Print invoice @ OrderListItem");

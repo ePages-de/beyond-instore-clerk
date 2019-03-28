@@ -12,6 +12,7 @@
     <tbody v-if="orders.length > 0">
       <OrderListItem
         v-for="order in orders"
+        v-on:orderMarkAsCompleted="markAsCompleted"
         :key="order.orderNumber"
         :order="order"
         :locale="shop.defaultLocale"
@@ -41,6 +42,18 @@ export default {
   },
 
   methods: {
+    markAsCompleted(orderId) {
+      this.orders = this.orders.map(order => {
+        if (order._id === orderId) {
+          return {
+            ...order,
+            paymentStatus: "PAID",
+            shippingStatus: "SHIPPED"
+          };
+        }
+        return order;
+      });
+    },
     async getOrders() {
       const { data } = await this.$axios.get("/orders?size=20", { headers });
       this.orders = data._embedded.orders.filter(
