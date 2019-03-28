@@ -60,14 +60,7 @@ tr {
   border-bottom: 1px solid #e9e8dc;
   background-color: white;
 }
-tr:last-child {
-  border-bottom: none;
-}
-tr:hover {
-  background-color: #e8f3f2;
-}
-th,
-td {
+th {
   padding: 15px;
 }
 @media (max-width: 1023px) {
